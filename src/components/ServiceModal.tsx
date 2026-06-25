@@ -90,10 +90,10 @@ export default function ServiceModal({
         aria-modal="true"
         aria-label={service.title}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-stone-50 shadow-2xl"
+        className="relative flex max-h-[94vh] w-full max-w-2xl flex-col overflow-y-auto overscroll-contain rounded-3xl bg-stone-50 shadow-2xl"
       >
         {/* Header */}
-        <div className="relative overflow-hidden bg-navy-900 px-6 py-5 text-white sm:px-7 sm:py-6">
+        <div className="relative shrink-0 overflow-hidden bg-navy-900 px-6 py-5 text-white sm:px-7 sm:py-6">
           <div className="brick-wall pointer-events-none absolute inset-0 opacity-25" />
           <button
             type="button"
@@ -117,7 +117,7 @@ export default function ServiceModal({
         </div>
 
         {/* Body */}
-        <div className="grid gap-5 px-6 py-5 sm:grid-cols-2 sm:px-7 sm:py-6">
+        <div className="grid shrink-0 gap-5 px-6 py-5 sm:grid-cols-2 sm:px-7 sm:py-6">
           <div>
             <h4 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-brick-600">
               What&apos;s included
@@ -147,7 +147,7 @@ export default function ServiceModal({
         </div>
 
         {/* Gallery link */}
-        <div className="px-6 sm:px-7">
+        <div className="shrink-0 px-6 sm:px-7">
           <button
             type="button"
             onClick={viewGallery}
@@ -160,7 +160,7 @@ export default function ServiceModal({
         </div>
 
         {/* Footer CTAs */}
-        <div className="mt-5 flex flex-col gap-3 border-t border-navy-900/10 bg-stone-100 px-6 py-5 sm:flex-row sm:items-center sm:px-7">
+        <div className="mt-5 flex shrink-0 flex-col gap-3 border-t border-navy-900/10 bg-stone-100 px-6 py-5 sm:flex-row sm:items-center sm:px-7">
           <a
             href="#contact"
             onClick={onClose}

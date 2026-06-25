@@ -9,7 +9,7 @@ import {
   type GalleryCategory,
   type GalleryItem,
 } from "@/lib/gallery";
-import { site } from "@/lib/site";
+import { anchorTargetY, site } from "@/lib/site";
 import Logo from "./Logo";
 import Reveal from "./Reveal";
 import SplitHeading from "./SplitHeading";
@@ -48,9 +48,10 @@ export default function Gallery() {
           ? (cat as GalleryCategory)
           : "All"
       );
-      const lenis = (window as unknown as { lenis?: { scrollTo: (t: string, o?: object) => void } }).lenis;
-      if (lenis) lenis.scrollTo("#gallery", { offset: -84 });
-      else document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
+      const el = document.getElementById("gallery");
+      const lenis = (window as unknown as { lenis?: { scrollTo: (t: number, o?: object) => void } }).lenis;
+      if (lenis && el) lenis.scrollTo(anchorTargetY(el));
+      else el?.scrollIntoView({ behavior: "smooth" });
     };
     window.addEventListener("gallery:show", handler);
     return () => window.removeEventListener("gallery:show", handler);

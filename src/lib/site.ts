@@ -55,6 +55,31 @@ export function telLink(): string {
   return `tel:${site.phoneDial}`;
 }
 
+/**
+ * Fixed navbar height (incl. a little breathing room) that in-page jumps need
+ * to clear so a section's heading lands just below the nav rather than behind
+ * it. Tuned to the scrolled navbar pill height.
+ */
+export const NAV_OFFSET = 92;
+
+/**
+ * Absolute scroll position (px) for an in-page anchor jump, so the target
+ * section's heading comes to rest just below the fixed navbar.
+ *
+ * Sections carry large top padding (`py-24`/`py-32`) with the heading sitting
+ * *inside* it, so scrolling to the section's top edge leaves the heading
+ * stranded in the middle of the screen. We skip the section's own top padding
+ * and clear the navbar, landing the eyebrow/heading right under the nav. The
+ * padding is read live, so it stays correct across the responsive `sm:`
+ * breakpoint. Returns an absolute number (not an element) because Lenis'
+ * element-based `scrollTo` lands a padding's-worth short on tall pages.
+ */
+export function anchorTargetY(target: Element): number {
+  const padTop = parseFloat(getComputedStyle(target).paddingTop) || 0;
+  const absTop = target.getBoundingClientRect().top + window.scrollY;
+  return Math.max(0, absTop + padTop - NAV_OFFSET);
+}
+
 // ── Service categories (the different categories of work offered) ──────────
 export type Service = {
   slug: string;

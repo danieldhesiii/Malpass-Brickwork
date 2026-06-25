@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { anchorTargetY } from "@/lib/site";
 
 /**
  * Lenis smooth-scroll, synced with the GSAP ticker + ScrollTrigger so every
@@ -56,7 +57,7 @@ export default function SmoothScroll({
       const target = document.querySelector(id);
       if (!target) return;
       e.preventDefault();
-      lenis.scrollTo(target as HTMLElement, { offset: -84, duration: 1.2 });
+      lenis.scrollTo(anchorTargetY(target), { duration: 1.2 });
     };
     document.addEventListener("click", onAnchorClick);
 

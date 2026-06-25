@@ -93,7 +93,9 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-x flex flex-col items-center justify-between gap-3 py-6 text-xs text-white/45 sm:flex-row">
+        {/* Extra bottom clearance on mobile so the floating WhatsApp button
+            never overlaps the copyright line / footer links. */}
+        <div className="container-x flex flex-col items-center justify-between gap-3 py-6 pb-28 text-xs text-white/45 sm:flex-row sm:pb-6">
           <p>
             © {year} {site.name}. All rights reserved.
           </p>
