@@ -117,9 +117,9 @@ export default function Hero() {
           </dl>
         </div>
 
-        {/* Visual: brick panel + floating credential card.
+        {/* Visual: brick panel + credential badge beneath it.
             Swap the brick panel for a real photo of the work when you have one. */}
-        <div data-hero className="relative mx-auto w-full max-w-md lg:max-w-none">
+        <div data-hero className="mx-auto w-full max-w-md lg:max-w-none">
           <div
             ref={panel}
             className="brick-wall relative aspect-[4/5] overflow-hidden rounded-[2rem] rounded-tr-[4.5rem] shadow-2xl shadow-ink/25 ring-1 ring-ink/10"
@@ -136,7 +136,8 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="absolute -bottom-5 -left-3 flex items-center gap-3 rounded-2xl border border-ink/10 bg-stone-50 px-5 py-3.5 shadow-xl sm:-left-6">
+          {/* Credential badge — sits below the panel so it never covers the image */}
+          <div className="mt-5 flex w-fit items-center gap-3 rounded-2xl border border-ink/10 bg-stone-50 px-5 py-3.5 shadow-xl">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brick-600 text-white">
               <ShieldCheck className="h-5 w-5" />
             </span>
