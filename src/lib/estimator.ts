@@ -179,7 +179,13 @@ export const gbp = (n: number) =>
 
 export function estimate(input: EstimatorInput): EstimateResult {
   const job = jobTypes.find((j) => j.id === input.jobId);
-  if (!job) return { low: 0, high: 0, ok: false, message: "Pick a job type." };
+  if (!job)
+    return {
+      low: 0,
+      high: 0,
+      ok: false,
+      message: "Choose a job type and fill in the details to see your estimate.",
+    };
 
   const fMult = job.hasFinish ? finishMult(input.finish) : 1;
   const aMult = accessMult(input.access);
@@ -188,7 +194,12 @@ export function estimate(input: EstimatorInput): EstimateResult {
   if (job.mode === "wall") {
     const { length, height } = input;
     if (!length || !height || length <= 0 || height <= 0) {
-      return { low: 0, high: 0, ok: false, message: "Enter the wall length and height." };
+      return {
+        low: 0,
+        high: 0,
+        ok: false,
+        message: "Enter the wall length and height to see your estimate.",
+      };
     }
     const area = Math.round(length * height * 10) / 10;
     const sMult = job.hasSkin ? skinMult(input.skin) : 1;
@@ -216,7 +227,12 @@ export function estimate(input: EstimatorInput): EstimateResult {
   if (job.mode === "area") {
     const { area } = input;
     if (!area || area <= 0)
-      return { low: 0, high: 0, ok: false, message: "Enter the area in m²." };
+      return {
+        low: 0,
+        high: 0,
+        ok: false,
+        message: "Enter the area in m² to see your estimate.",
+      };
     const low = area * (job.rateLow ?? 0) * fMult * aMult;
     const high = area * (job.rateHigh ?? 0) * fMult * aMult;
     lines.push({ label: "Area", value: `${area} m²` });

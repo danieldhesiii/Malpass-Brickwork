@@ -39,6 +39,23 @@ export default function Gallery() {
     [items.length]
   );
 
+  // A service modal can ask the gallery to filter to a category and scroll here.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const cat = (e as CustomEvent).detail as string;
+      setFilter(
+        cat && (galleryCategories as string[]).includes(cat)
+          ? (cat as GalleryCategory)
+          : "All"
+      );
+      const lenis = (window as unknown as { lenis?: { scrollTo: (t: string, o?: object) => void } }).lenis;
+      if (lenis) lenis.scrollTo("#gallery", { offset: -84 });
+      else document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" });
+    };
+    window.addEventListener("gallery:show", handler);
+    return () => window.removeEventListener("gallery:show", handler);
+  }, []);
+
   // Keyboard controls + scroll lock while lightbox is open.
   useEffect(() => {
     if (lightbox === null) return;

@@ -13,6 +13,7 @@ import {
   X,
   Check,
   ArrowRight,
+  Images,
   type LucideIcon,
 } from "lucide-react";
 import { type Service, whatsappLink } from "@/lib/site";
@@ -29,10 +30,22 @@ const iconMap: Record<string, LucideIcon> = {
   Sparkles,
 };
 
+/** Maps a service to the gallery category that shows photos of that work. */
+const galleryCategoryFor: Record<string, string> = {
+  "brick-block": "Walls",
+  extensions: "Extensions",
+  "garden-walls": "Walls",
+  repointing: "Repointing",
+  "brick-repairs": "Walls",
+  chimneys: "Chimneys",
+  paving: "Paving",
+  "feature-brickwork": "Feature",
+};
+
 /**
- * Detail panel that opens when a service card is clicked. Gives the visitor
- * something genuinely useful (what the job involves + what to expect) before
- * pushing them to the quote form, rather than firing them straight to WhatsApp.
+ * Detail panel that opens when a service card is clicked. Built to fit the
+ * viewport without scrolling: a tight header, two compact columns, a link to
+ * the matching gallery photos, then the quote CTAs.
  */
 export default function ServiceModal({
   service,
@@ -58,9 +71,18 @@ export default function ServiceModal({
   if (!service) return null;
   const Icon = iconMap[service.icon] ?? BrickWall;
 
+  const viewGallery = () => {
+    const category = galleryCategoryFor[service.slug] ?? "All";
+    onClose();
+    // Let the modal close, then tell the gallery to filter + scroll.
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("gallery:show", { detail: category }));
+    }, 60);
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-navy-950/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/70 p-3 backdrop-blur-sm sm:p-4"
       onClick={onClose}
     >
       <div
@@ -68,51 +90,55 @@ export default function ServiceModal({
         aria-modal="true"
         aria-label={service.title}
         onClick={(e) => e.stopPropagation()}
-        className="relative max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-stone-50 shadow-2xl sm:rounded-3xl"
+        className="relative flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-stone-50 shadow-2xl"
       >
         {/* Header */}
-        <div className="relative overflow-hidden bg-navy-900 p-7 text-white sm:p-9">
+        <div className="relative overflow-hidden bg-navy-900 px-6 py-5 text-white sm:px-7 sm:py-6">
           <div className="brick-wall pointer-events-none absolute inset-0 opacity-25" />
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           >
             <X className="h-5 w-5" />
           </button>
-          <div className="relative">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-royal">
-              <Icon className="h-7 w-7" strokeWidth={1.6} />
+          <div className="relative flex items-center gap-4 pr-8">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-royal">
+              <Icon className="h-6 w-6" strokeWidth={1.7} />
             </div>
-            <h3 className="text-3xl font-extrabold">{service.title}</h3>
-            <p className="mt-3 max-w-lg text-white/75">{service.overview}</p>
+            <h3 className="text-2xl font-extrabold leading-tight sm:text-3xl">
+              {service.title}
+            </h3>
           </div>
+          <p className="relative mt-3 text-sm leading-relaxed text-white/75">
+            {service.overview}
+          </p>
         </div>
 
         {/* Body */}
-        <div className="grid gap-8 p-7 sm:grid-cols-2 sm:p-9">
+        <div className="grid gap-5 px-6 py-5 sm:grid-cols-2 sm:px-7 sm:py-6">
           <div>
-            <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brick-600">
+            <h4 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-brick-600">
               What&apos;s included
             </h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2">
               {service.points.map((p) => (
-                <li key={p} className="flex items-start gap-2.5 text-navy-900/80">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-royal" strokeWidth={2.5} />
+                <li key={p} className="flex items-start gap-2 text-sm text-navy-900/80">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-royal" strokeWidth={2.5} />
                   {p}
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-bold uppercase tracking-wider text-brick-600">
+            <h4 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-brick-600">
               What to expect
             </h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2">
               {service.expect.map((p) => (
-                <li key={p} className="flex items-start gap-2.5 text-navy-900/80">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-royal" />
+                <li key={p} className="flex items-start gap-2 text-sm text-navy-900/80">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-royal" />
                   {p}
                 </li>
               ))}
@@ -120,12 +146,25 @@ export default function ServiceModal({
           </div>
         </div>
 
+        {/* Gallery link */}
+        <div className="px-6 sm:px-7">
+          <button
+            type="button"
+            onClick={viewGallery}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-navy-900/15 bg-white py-3 text-sm font-semibold text-navy-900 transition-colors hover:border-royal/40 hover:bg-stone-100"
+          >
+            <Images className="h-4 w-4 text-royal" />
+            See photos of this work in the gallery
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+
         {/* Footer CTAs */}
-        <div className="flex flex-col gap-3 border-t border-navy-900/10 bg-stone-100 p-7 sm:flex-row sm:items-center sm:p-9">
+        <div className="mt-5 flex flex-col gap-3 border-t border-navy-900/10 bg-stone-100 px-6 py-5 sm:flex-row sm:items-center sm:px-7">
           <a
             href="#contact"
             onClick={onClose}
-            className="group inline-flex flex-1 items-center justify-center gap-2.5 rounded-full bg-royal px-6 py-4 font-semibold text-white shadow-lg shadow-royal/25 transition-all hover:bg-navy-800 active:scale-[0.98]"
+            className="group inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-royal px-5 py-3.5 font-semibold text-white shadow-lg shadow-royal/25 transition-all hover:bg-navy-800 active:scale-[0.98]"
           >
             Get a free quote for this
             <ArrowRight className="h-[18px] w-[18px] transition-transform group-hover:translate-x-0.5" />
@@ -136,7 +175,7 @@ export default function ServiceModal({
             )}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-navy-900/15 bg-white px-6 py-4 font-semibold text-navy-900 transition-colors hover:bg-stone-200"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-navy-900/15 bg-white px-5 py-3.5 font-semibold text-navy-900 transition-colors hover:bg-stone-200"
           >
             <WhatsAppGlyph className="h-5 w-5 text-[#25D366]" />
             Ask on WhatsApp

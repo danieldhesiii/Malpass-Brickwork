@@ -25,18 +25,20 @@ const firstVariant = (jobId: string) => {
 };
 
 export default function CostEstimator() {
-  const [jobId, setJobId] = useState(jobTypes[0].id);
-  const [length, setLength] = useState(5);
-  const [height, setHeight] = useState(1.8);
-  const [area, setArea] = useState(20);
+  // Everything starts empty/unselected so the estimate begins at £0 and only
+  // updates once the visitor has chosen and filled things in.
+  const [jobId, setJobId] = useState("");
+  const [length, setLength] = useState(NaN);
+  const [height, setHeight] = useState(NaN);
+  const [area, setArea] = useState(NaN);
   const [skin, setSkin] = useState<SkinId>("single");
   const [finish, setFinish] = useState<FinishId>("standard");
   const [access, setAccess] = useState<AccessId>("easy");
-  const [variantId, setVariantId] = useState(firstVariant(jobTypes[0].id));
+  const [variantId, setVariantId] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [includeFoundation, setIncludeFoundation] = useState(true);
 
-  const job = jobTypes.find((j) => j.id === jobId)!;
+  const job = jobTypes.find((j) => j.id === jobId);
 
   const onJobChange = (id: string) => {
     setJobId(id);
@@ -44,14 +46,14 @@ export default function CostEstimator() {
   };
 
   const resetAll = () => {
-    setJobId(jobTypes[0].id);
-    setLength(5);
-    setHeight(1.8);
-    setArea(20);
+    setJobId("");
+    setLength(NaN);
+    setHeight(NaN);
+    setArea(NaN);
     setSkin("single");
     setFinish("standard");
     setAccess("easy");
-    setVariantId(firstVariant(jobTypes[0].id));
+    setVariantId("");
     setQuantity(1);
     setIncludeFoundation(true);
   };
@@ -90,14 +92,14 @@ export default function CostEstimator() {
     return [
       `Hi, I used the cost estimator on your website.`,
       ``,
-      `Job: ${job.label}`,
+      `Job: ${job?.label ?? ""}`,
       lines,
       ``,
       `Rough estimate: ${gbp(result.low)} to ${gbp(result.high)}`,
       ``,
       `Could I get a proper quote please?`,
     ].join("\n");
-  }, [result, job.label]);
+  }, [result, job?.label]);
 
   return (
     <section id="estimate" className="bg-stone-200 py-24 sm:py-32">
@@ -137,103 +139,116 @@ export default function CostEstimator() {
 
               <Field label="What's the job?">
                 <Select value={jobId} onChange={(e) => onJobChange(e.target.value)}>
+                  <option value="">Choose a job type…</option>
                   {jobTypes.map((j) => (
                     <option key={j.id} value={j.id}>
                       {j.label}
                     </option>
                   ))}
                 </Select>
-                <p className="mt-1.5 text-sm text-navy-900/55">{job.desc}</p>
+                {job && (
+                  <p className="mt-1.5 text-sm text-navy-900/55">{job.desc}</p>
+                )}
               </Field>
 
-              {/* Wall mode: length + height */}
-              {job.mode === "wall" && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="Wall length (m)">
-                    <NumberInput value={length} min={0} step={0.5} onChange={setLength} />
+              {!job && (
+                <p className="rounded-xl border border-dashed border-navy-900/15 bg-stone-100 px-4 py-3 text-sm text-navy-900/55">
+                  Pick a job type above to fill in the details.
+                </p>
+              )}
+
+              {job && (
+                <>
+                  {/* Wall mode: length + height */}
+                  {job.mode === "wall" && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Wall length (m)">
+                        <NumberInput value={length} min={0} step={0.5} placeholder="e.g. 5" onChange={setLength} />
+                      </Field>
+                      <Field label="Wall height (m)">
+                        <NumberInput value={height} min={0} step={0.1} placeholder="e.g. 1.8" onChange={setHeight} />
+                      </Field>
+                    </div>
+                  )}
+
+                  {/* Area mode */}
+                  {job.mode === "area" && (
+                    <Field label="Area (m²)">
+                      <NumberInput value={area} min={0} step={1} placeholder="e.g. 20" onChange={setArea} />
+                    </Field>
+                  )}
+
+                  {/* Fixed / count variants */}
+                  {(job.mode === "fixed" || job.mode === "count") && (
+                    <Field label={job.mode === "count" ? "Which feature?" : "Type of work"}>
+                      <Select value={variantId} onChange={(e) => setVariantId(e.target.value)}>
+                        {(job.variants ?? job.countVariants ?? []).map((v) => (
+                          <option key={v.id} value={v.id}>
+                            {v.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  )}
+
+                  {job.mode === "count" && (
+                    <Field label={job.countLabel ?? "How many?"}>
+                      <NumberInput value={quantity} min={1} step={1} placeholder="e.g. 2" onChange={setQuantity} />
+                    </Field>
+                  )}
+
+                  {/* Skin */}
+                  {job.hasSkin && (
+                    <Field label="Wall type">
+                      <Select value={skin} onChange={(e) => setSkin(e.target.value as SkinId)}>
+                        {skins.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  )}
+
+                  {/* Finish */}
+                  {job.hasFinish && (
+                    <Field label="Brick / finish">
+                      <Select value={finish} onChange={(e) => setFinish(e.target.value as FinishId)}>
+                        {finishes.map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  )}
+
+                  {/* Access */}
+                  <Field label="Access">
+                    <Select value={access} onChange={(e) => setAccess(e.target.value as AccessId)}>
+                      {accessOptions.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.label}
+                        </option>
+                      ))}
+                    </Select>
                   </Field>
-                  <Field label="Wall height (m)">
-                    <NumberInput value={height} min={0} step={0.1} onChange={setHeight} />
-                  </Field>
-                </div>
-              )}
 
-              {/* Area mode */}
-              {job.mode === "area" && (
-                <Field label="Area (m²)">
-                  <NumberInput value={area} min={0} step={1} onChange={setArea} />
-                </Field>
-              )}
-
-              {/* Fixed / count variants */}
-              {(job.mode === "fixed" || job.mode === "count") && (
-                <Field label={job.mode === "count" ? "Which feature?" : "Type of work"}>
-                  <Select value={variantId} onChange={(e) => setVariantId(e.target.value)}>
-                    {(job.variants ?? job.countVariants ?? []).map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              )}
-
-              {job.mode === "count" && (
-                <Field label={job.countLabel ?? "How many?"}>
-                  <NumberInput value={quantity} min={1} step={1} onChange={setQuantity} />
-                </Field>
-              )}
-
-              {/* Skin */}
-              {job.hasSkin && (
-                <Field label="Wall type">
-                  <Select value={skin} onChange={(e) => setSkin(e.target.value as SkinId)}>
-                    {skins.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              )}
-
-              {/* Finish */}
-              {job.hasFinish && (
-                <Field label="Brick / finish">
-                  <Select value={finish} onChange={(e) => setFinish(e.target.value as FinishId)}>
-                    {finishes.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.label}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              )}
-
-              {/* Access */}
-              <Field label="Access">
-                <Select value={access} onChange={(e) => setAccess(e.target.value as AccessId)}>
-                  {accessOptions.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.label}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-
-              {/* Foundation toggle */}
-              {job.hasFoundation && (
-                <label className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-ink/10 bg-stone-100 px-4 py-3">
-                  <input
-                    type="checkbox"
-                    checked={includeFoundation}
-                    onChange={(e) => setIncludeFoundation(e.target.checked)}
-                    className="h-5 w-5 accent-brick-600"
-                  />
-                  <span className="text-sm font-medium text-navy-900">
-                    Include footings / foundations
-                  </span>
-                </label>
+                  {/* Foundation toggle */}
+                  {job.hasFoundation && (
+                    <label className="mt-2 flex cursor-pointer items-center gap-3 rounded-xl border border-ink/10 bg-stone-100 px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={includeFoundation}
+                        onChange={(e) => setIncludeFoundation(e.target.checked)}
+                        className="h-5 w-5 accent-brick-600"
+                      />
+                      <span className="text-sm font-medium text-navy-900">
+                        Include footings / foundations
+                      </span>
+                    </label>
+                  )}
+                </>
               )}
             </div>
 
@@ -250,7 +265,7 @@ export default function CostEstimator() {
                   <>
                     <div className="font-[family-name:var(--font-archivo)] text-4xl font-extrabold leading-none sm:text-5xl">
                       {gbp(result.low)}
-                      <span className="mx-2 text-white/40">–</span>
+                      <span className="mx-2 text-white/40">to</span>
                       {gbp(result.high)}
                     </div>
                     <dl className="mt-7 space-y-2.5 border-t border-white/10 pt-5">
@@ -268,7 +283,14 @@ export default function CostEstimator() {
                     </dl>
                   </>
                 ) : (
-                  <p className="text-lg text-white/70">{result.message}</p>
+                  <>
+                    <div className="font-[family-name:var(--font-archivo)] text-4xl font-extrabold leading-none text-white/30 sm:text-5xl">
+                      {gbp(0)}
+                    </div>
+                    <p className="mt-5 border-t border-white/10 pt-5 text-white/70">
+                      {result.message}
+                    </p>
+                  </>
                 )}
               </div>
 
@@ -321,11 +343,13 @@ function NumberInput({
   onChange,
   min,
   step,
+  placeholder,
 }: {
   value: number;
   onChange: (n: number) => void;
   min?: number;
   step?: number;
+  placeholder?: string;
 }) {
   return (
     <input
@@ -334,6 +358,7 @@ function NumberInput({
       value={Number.isFinite(value) ? value : ""}
       min={min}
       step={step}
+      placeholder={placeholder}
       onChange={(e) => onChange(parseFloat(e.target.value))}
       className={fieldClass}
     />
