@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Malpass Brickwork
 
-## Getting Started
+Marketing website for **Malpass Brickwork**, a bricklaying business. A fast,
+single-page Next.js site with a services overview, an interactive cost
+estimator, a work gallery, customer reviews, a quote form and WhatsApp
+integration.
 
-First, run the development server:
+**Live preview locally:** `npm run dev` → http://localhost:3000
+
+---
+
+## Tech stack
+
+- **Next.js 16** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS v4** (theme tokens in `src/app/globals.css`)
+- **GSAP** + **Lenis** (smooth scroll) + **Swiper** (carousels) for animation
+- **lucide-react** for icons
+- Fonts: **Archivo** (headings) + **Hanken Grotesk** (body)
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # start the dev server
+npm run build    # production build
+npm run start    # serve the production build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Port note: if 3000 is in use, run `PORT=3100 npm run dev`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Editing the business details
 
-## Learn More
+Almost everything the owner needs to change lives in **one file:**
+**`src/lib/site.ts`**. Update it and the change appears everywhere on the site.
 
-To learn more about Next.js, take a look at the following resources:
+| What | Where in `site.ts` | Notes |
+|------|--------------------|-------|
+| Phone number | `phoneDisplay`, `phoneDial`, `whatsappNumber` | WhatsApp number is international format, no `+` or spaces (e.g. `447941510504`) |
+| Service area | `serviceArea` | **Needs setting** to the real region/county (feeds hero, footer, SEO) |
+| Years / jobs figures | `yearsExperience`, `jobsCompleted` | Used in the hero + about stats |
+| Email | `email` | |
+| Instagram | `instagram`, `instagramHandle` | |
+| Facebook | `facebook` | Leave `""` to hide it |
+| Google reviews | `googleReviews`, `googleWriteReview` | **Replace the placeholder Google URLs** with the real Business Profile links (read + write-a-review) |
+| Opening hours | `hours` | |
+| Services | `services[]` | Title, blurb, overview, "what's included" and "what to expect" per service |
+| Reviews | `testimonials[]` | Currently placeholder quotes |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Gallery photos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The gallery ships with on-brand placeholder tiles. To use real photos:
 
-## Deploy on Vercel
+1. Save images into `public/gallery/` (e.g. `wall-01.jpg`).
+2. In `src/lib/gallery.ts`, add `src: "/gallery/wall-01.jpg"` to the matching
+   item (and set its `category` + `alt`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Any item without a `src` shows a placeholder, so you can swap them in gradually.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Cost estimator rates
+
+The estimator's rate model lives in `src/lib/estimator.ts` (per-m² rates,
+finish/access/skin multipliers, footings, chimney/feature pricing). Edit the
+numbers there to match real pricing. All results are clearly shown as a
+**guide only**.
+
+---
+
+## How the buttons behave
+
+- **Every "Get a free quote" button** scrolls to the contact form at the bottom.
+- **The floating green button** (bottom-right) is the only thing that opens
+  WhatsApp directly.
+- **Service cards** open a detail panel (overview + what's involved), not WhatsApp.
+- The **quote form** composes a pre-filled WhatsApp message on submit — no
+  backend required. (Swap to an email service later if preferred.)
+
+## Pages
+
+- `/` — the main site
+- `/privacy` — privacy policy (linked in the footer; update the "Last updated"
+  date in `src/app/privacy/page.tsx` when it changes)
+
+---
+
+## Deploy
+
+Deploys cleanly to [Vercel](https://vercel.com/new) (or any Node host): connect
+the repo, no environment variables required. `npm run build` must pass first.
